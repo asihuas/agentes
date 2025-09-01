@@ -30,7 +30,7 @@
     const scrollIcon    = root.dataset.scrollIcon || 'https://wa4u.ai/wp-content/uploads/2025/08/nav-arrow-down.svg';
 
     function getChatKey(){
-      return `amChatOpts-${convUid || 'agent-' + agentId}`;
+      return `amChatOpts-agent-${agentId}`;
     }
 
     // -----------------------
@@ -184,7 +184,8 @@
         if (isRecording) return;
         chunks = [];
         micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(micStream, { mimeType: 'audio/webm' });
+        const mime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+        mediaRecorder = new MediaRecorder(micStream, { mimeType: mime });
         mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
         mediaRecorder.onstop = async () => {
           if (micStream) {
@@ -206,7 +207,8 @@
           if (voiceBtn) voiceBtn.style.display = 'none';
           if (sendBtn) sendBtn.style.display = 'none';
           if (callBtn) callBtn.style.display = 'none';
-          const file = new File(chunks, 'audio.webm', { type: 'audio/webm' });
+          const ext = mime === 'audio/webm' ? 'webm' : 'mp4';
+          const file = new File(chunks, `audio.${ext}`, { type: mime });
           const fd = new FormData();
           fd.append('file', file);
           const rawLang = root.dataset.sttLang || '';
@@ -410,13 +412,6 @@
         // Notify conversation update
         if (data && data.conversation_uid) {
           convUid = data.conversation_uid;
-
-          const oldKey = `amChatOpts-agent-${agentId}`;
-          const newKey = getChatKey();
-          if (window.AM_CHAT_OPTS && window.AM_CHAT_OPTS[oldKey] && !window.AM_CHAT_OPTS[newKey]) {
-            window.AM_CHAT_OPTS[newKey] = window.AM_CHAT_OPTS[oldKey];
-            try { localStorage.setItem(newKey, JSON.stringify(window.AM_CHAT_OPTS[oldKey])); } catch (_){ }
-          }
 
           // Update URL
           const url = new URL(window.location.href);
@@ -821,7 +816,8 @@ function extractSuggestions(raw, replyOrRaw) {
 
       const avatar = document.createElement('div');
       avatar.className = 'avatar';
-      avatar.textContent = role === 'user' ? 'Me' : assistantName;
+      const userLabel = root.dataset.userName || 'Me';
+      avatar.textContent = role === 'user' ? userLabel : assistantName;
 
       if (role !== 'user' && withPlay) {
         const btn = document.createElement('button');
