@@ -145,6 +145,7 @@
     // -----------------------
     const sendBtn = root.querySelector('.send');
     const callBtn = root.querySelector('.am-voice-call-btn');
+    let toggleCallBtn = null;
     const inputInner = root.querySelector('.openai-input-inner');
     const transcribingImg = root.dataset.transcribingImg || 'https://wa4u.ai/wp-content/uploads/2025/09/transcribing.svg';
     let sttOverlay = null;
@@ -203,8 +204,11 @@
     }
 
     if (input && callBtn) {
-      input.addEventListener('focus', () => { callBtn.style.display = 'none'; });
-      input.addEventListener('blur', () => { setTimeout(() => { callBtn.style.display = ''; }, 0); });
+      toggleCallBtn = () => {
+        callBtn.style.display = input.value.trim() ? 'none' : '';
+      };
+      input.addEventListener('input', toggleCallBtn);
+      toggleCallBtn();
     }
 
     if (voiceBtn && navigator.mediaDevices) {
@@ -371,11 +375,10 @@
       const text = (input.value || '').trim();
       if (!text) return;
 
-      if (callBtn) callBtn.style.display = '';
-
       appendBubble('user', escapeHtml(text));
       input.value = '';
       autosize();
+      if (toggleCallBtn) toggleCallBtn();
 
       const typing = appendBubble('ai', '<div class="typing-indicator">Typing...</div>', false);
 
