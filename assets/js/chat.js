@@ -40,7 +40,7 @@
       if (!scrollerEl) return;
 
       const EPS = 64; // margen px para considerar "cerca del fondo"
-      let userLocked = false;
+      let userLocked = !!convUid;
 
       function isNearBottom() {
         const remaining = scrollerEl.scrollHeight - scrollerEl.clientHeight - scrollerEl.scrollTop;
@@ -127,12 +127,17 @@
       root.AM_isNearBottom   = isNearBottom;
       root.AM_scrollToBottom = scrollToBottom;
       root.AM_userLocked     = () => userLocked;
+      root.AM_setUserLocked  = (val) => { userLocked = !!val; };
       root.AM_scrollBtn      = goEndBtn;
 
       // Estado inicial
-      updateState();
-      // Ajuste inicial de posición
-      scrollToBottom(false);
+      if (convUid) {
+        userLocked = true;
+        goEndBtn.style.display = 'block';
+      } else {
+        updateState();
+        scrollToBottom(false);
+      }
     })();
 
     // -----------------------
@@ -184,7 +189,16 @@
       async function startRecording() {
         if (isRecording) return;
         chunks = [];
-        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (micStream) {
+          try { micStream.getTracks().forEach((t) => t.stop()); } catch (_) {}
+          micStream = null;
+        }
+        try {
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (err) {
+          console.error('getUserMedia error', err);
+          return;
+        }
         const mime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
         mediaRecorder = new MediaRecorder(micStream, { mimeType: mime });
         mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
@@ -192,6 +206,15 @@
           if (micStream) {
             micStream.getTracks().forEach((t) => t.stop());
             micStream = null;
+          }
+          if (!chunks.length) {
+            if (sttOverlay) sttOverlay.style.display = 'none';
+            if (voiceBtn) voiceBtn.style.display = '';
+            if (sendBtn) sendBtn.style.display = '';
+            updateVoiceBtn('idle');
+            if (callBtn) callBtn.style.display = 'none';
+            mediaRecorder = null;
+            return;
           }
           if (sttOverlay) {
             sttOverlay.innerHTML = transcribingImg
@@ -328,11 +351,13 @@
       if (!text) return;
 
       appendBubble('user', escapeHtml(text));
+      if (root.AM_setUserLocked) root.AM_setUserLocked(false);
+      if (root.AM_scrollToBottom) root.AM_scrollToBottom(true);
       input.value = '';
       autosize();
       if (toggleCallBtn) toggleCallBtn();
 
-      const typing = appendBubble('ai', '<div class="typing-indicator">Typing...</div>', false);
+      const typing = appendBubble('ai', '<div class="typing-indicator"><span></span><span></span><span></span></div>', false);
 
       try {
         const payload = {
