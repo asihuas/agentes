@@ -347,8 +347,8 @@ add_shortcode('am_chat', function(){
           setState('Idle');
         }
         busy = false;
-        if (mediaRecorder && mediaRecorder.state === 'inactive') {
-          try { mediaRecorder.start(4000); } catch(_) {}
+        if (!mediaRecorder || mediaRecorder.state !== 'recording') {
+          startRecognition();
         }
         if (pendingChunk && !busy) {
           const b = pendingChunk; pendingChunk = null; await processChunk(b);
@@ -394,6 +394,11 @@ add_shortcode('am_chat', function(){
             if (!e.data || e.data.size === 0) return;
             if (busy) { pendingChunk = e.data; return; }
             await processChunk(e.data);
+          };
+          mediaRecorder.onstop = () => {
+            if (overlay.style.display === 'grid' && !micMuted) {
+              startRecognition();
+            }
           };
           mediaRecorder.start(4000);
           setState('Listening');
