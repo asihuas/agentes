@@ -203,14 +203,16 @@ add_shortcode('am_chat', function(){
         wrap.className = 'openai-bubble ' + (role === 'user' ? 'user' : 'ai');
         const avatar = document.createElement('div');
         avatar.className = 'avatar';
-        avatar.textContent = role === 'user' ? 'Me' : (document.querySelector('.openai-chat-container')?.dataset?.assistantName || 'Assistant');
+        const root = document.querySelector('.openai-chat-container');
+        const userLabel = root?.dataset?.userName || 'Me';
+        const assistantLabel = root?.dataset?.assistantName || 'Assistant';
+        avatar.textContent = role === 'user' ? userLabel : assistantLabel;
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
         bubble.innerHTML = text;
         wrap.appendChild(avatar);
         wrap.appendChild(bubble);
         container.appendChild(wrap);
-        const root = document.querySelector('.openai-chat-container');
         if (root && root.AM_scrollToBottom) root.AM_scrollToBottom(true);
       }
 
@@ -266,10 +268,11 @@ add_shortcode('am_chat', function(){
         logMessage('user', text);
 
         try {
+          const key = `amChatOpts-agent-${agentId}`;
           const r = await fetch(REST + 'am/v1/chat', {
             method:'POST',
             headers:{ 'Content-Type':'application/json','X-WP-Nonce': NONCE },
-            body: JSON.stringify({ agent_id: agentId, message: text, conversation_uid: convUid, options: window.AM_CHAT_OPTS || {} })
+            body: JSON.stringify({ agent_id: agentId, message: text, conversation_uid: convUid, options: (window.AM_CHAT_OPTS && window.AM_CHAT_OPTS[key]) || {} })
           });
           const data = await r.json();
           if (data && data.conversation_uid) {
@@ -311,12 +314,13 @@ add_shortcode('am_chat', function(){
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
           if (!micAnalyser) await initMicMonitor();
           startMicViz();
-          mediaRecorder = new MediaRecorder(stream);
+          const mime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+          mediaRecorder = new MediaRecorder(stream, { mimeType: mime });
           const lang = document.querySelector('.openai-chat-container')?.dataset?.sttLang || 'en-US';
           mediaRecorder.ondataavailable = async (e) => {
             if (!e.data || e.data.size === 0) return;
             const fd = new FormData();
-            fd.append('file', e.data, 'chunk.webm');
+            fd.append('file', e.data, `chunk.${mime === 'audio/webm' ? 'webm' : 'mp4'}`);
             fd.append('language', lang);
             try {
               const r = await fetch(REST + 'am/v1/stt', {
@@ -542,31 +546,34 @@ function am_format_date_group($date) {
 function am_chat_options_shortcode(){
   $uid = wp_generate_uuid4();
   ob_start(); ?>
-  <div class="am-chat-options">
-    <label>Tone:
+  <div class="am-chat-options" id="am-chat-options-<?php echo esc_attr($uid); ?>">
+    <div>
+      <label for="am-chat-tone-<?php echo esc_attr($uid); ?>">Tone:</label>
       <select id="am-chat-tone-<?php echo esc_attr($uid); ?>">
         <option value="">Default</option>
         <option value="friendly">Friendly</option>
         <option value="professional">Professional</option>
         <option value="humorous">Humorous</option>
       </select>
-    </label>
-    <label>Length:
+    </div>
+    <div>
+      <label for="am-chat-length-<?php echo esc_attr($uid); ?>">Length:</label>
       <select id="am-chat-length-<?php echo esc_attr($uid); ?>">
         <option value="">Default</option>
         <option value="concise">Concise</option>
         <option value="detailed">Detailed</option>
       </select>
-    </label>
+    </div>
+    <button type="button" id="am-chat-save-<?php echo esc_attr($uid); ?>">Save</button>
   </div>
   <script>
   (function(){
     const toneSel = document.getElementById('am-chat-tone-<?php echo esc_attr($uid); ?>');
     const lenSel  = document.getElementById('am-chat-length-<?php echo esc_attr($uid); ?>');
-    const params = new URLSearchParams(location.search);
-    const cid    = params.get('cid') || '';
-    const agent  = params.get('agent_id') || '0';
-    const key    = `amChatOpts-${cid || 'agent-' + agent}`;
+    const saveBtn = document.getElementById('am-chat-save-<?php echo esc_attr($uid); ?>');
+    const params  = new URLSearchParams(location.search);
+    const agent   = params.get('agent_id') || '0';
+    const key     = `amChatOpts-agent-${agent}`;
 
     window.AM_CHAT_OPTS = window.AM_CHAT_OPTS || {};
 
@@ -575,7 +582,7 @@ function am_chat_options_shortcode(){
         tone: toneSel ? toneSel.value : '',
         length: lenSel ? lenSel.value : ''
       };
-      localStorage.setItem(key, JSON.stringify(opts));
+      try { localStorage.setItem(key, JSON.stringify(opts)); } catch(_){ }
       window.AM_CHAT_OPTS[key] = opts;
     }
 
@@ -583,10 +590,9 @@ function am_chat_options_shortcode(){
     try { stored = JSON.parse(localStorage.getItem(key) || '{}'); } catch(_){ stored = {}; }
     if (toneSel && stored.tone) toneSel.value = stored.tone;
     if (lenSel && stored.length) lenSel.value = stored.length;
+    window.AM_CHAT_OPTS[key] = stored;
 
-    toneSel && toneSel.addEventListener('change', save);
-    lenSel && lenSel.addEventListener('change', save);
-    save();
+    saveBtn && saveBtn.addEventListener('click', save);
   })();
   </script>
   <?php
