@@ -29,6 +29,8 @@
     const avatarUrl     = root.dataset.avatarUrl || '';
     const scrollIcon    = root.dataset.scrollIcon || 'https://wa4u.ai/wp-content/uploads/2025/08/nav-arrow-down.svg';
 
+    let initialLoad = true;
+
     function getChatKey(){
       return `amChatOpts-agent-${agentId}`;
     }
@@ -130,20 +132,16 @@
       root.AM_setUserLocked  = (val) => { userLocked = !!val; };
       root.AM_scrollBtn      = goEndBtn;
 
-      // Estado inicial
-      if (convUid) {
-        userLocked = true;
-        goEndBtn.style.display = 'block';
-      } else {
-        updateState();
-        scrollToBottom(false);
-      }
+      // Estado inicial: no auto-scroll al cargar
+      userLocked = true;
+      goEndBtn.style.display = 'block';
     })();
 
     // -----------------------
     // Bienvenida (después de montar auto-scroll)
     // -----------------------
     appendBubble('ai', escapeHtml(welcome), true);
+    initialLoad = false;
 
     // -----------------------
     // STT using Whisper via MediaRecorder
@@ -844,7 +842,14 @@ function extractSuggestions(raw, replyOrRaw) {
 
       messagesEl.appendChild(wrap);
 
-      if (shouldStick && root.AM_scrollToBottom) root.AM_scrollToBottom(true);
+      if (role === 'ai') {
+        if (!initialLoad) {
+          if (root.AM_setUserLocked) root.AM_setUserLocked(false);
+          if (root.AM_scrollToBottom) root.AM_scrollToBottom(true);
+        }
+      } else if (shouldStick && root.AM_scrollToBottom) {
+        root.AM_scrollToBottom(true);
+      }
       return wrap;
     }
 
