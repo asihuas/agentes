@@ -196,7 +196,10 @@ add_shortcode('am_chat', function(){
       function startTtsViz(audio){
         if (!levelCircle) return;
         if (ttsVizInterval) clearInterval(ttsVizInterval);
-        if (ttsCtx) { try { ttsCtx.close(); } catch(_) {} }
+        if (ttsCtx) {
+          try { ttsCtx.close().catch(()=>{}); } catch(_) {}
+          ttsCtx = null;
+        }
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         ttsCtx = new AudioCtx();
         const src = ttsCtx.createMediaElementSource(audio);
@@ -215,7 +218,10 @@ add_shortcode('am_chat', function(){
         },100);
         const clear = () => {
           clearInterval(ttsVizInterval); ttsVizInterval=null; levelCircle.style.transform='translate(-50%, -50%) scale(1)';
-          try { ttsCtx.close(); } catch(_) {}
+          if (ttsCtx) {
+            ttsCtx.close().catch(()=>{});
+            ttsCtx = null;
+          }
         };
         audio.addEventListener('ended', clear, {once:true});
         audio.addEventListener('pause', clear, {once:true});
@@ -449,7 +455,7 @@ add_shortcode('am_chat', function(){
         try { mediaRecorder && mediaRecorder.stop(); } catch(_) {}
         if (micVizInterval){ clearInterval(micVizInterval); micVizInterval=null; }
         if (ttsVizInterval){ clearInterval(ttsVizInterval); ttsVizInterval=null; }
-        if (ttsCtx){ try{ ttsCtx.close(); } catch(_){} ttsCtx=null; }
+        if (ttsCtx){ ttsCtx.close().catch(()=>{}); ttsCtx=null; }
         if (avatarImg) avatarImg.style.transform='scale(1)';
         if (levelCircle) levelCircle.style.transform='translate(-50%, -50%) scale(1)';
         if (micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; }
