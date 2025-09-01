@@ -58,7 +58,13 @@
       if (!list) return;
       const pins = getPins();
       pins.forEach(p => {
-        if (list.querySelector(`.am-agent-item[data-agent-id="${p.id}"]`)) return;
+        const existing = list.querySelector(`.am-agent-item[data-agent-id="${p.id}"]`);
+        if (existing) {
+          existing.classList.add('pinned');
+          const btn = existing.querySelector('.am-pin-btn');
+          if (btn) btn.textContent = 'Unpin';
+          return;
+        }
         const li = document.createElement('li');
         li.className = 'am-agent-item pinned';
         li.dataset.agentId = p.id;
@@ -78,7 +84,7 @@
         li.appendChild(span);
         const menuCont = document.createElement('div');
         menuCont.className = 'am-agent-menu-container';
-        menuCont.innerHTML = '<button type="button" class="am-agent-menu-btn" aria-label="Open menu"><svg width="12" height="4" viewBox="0 0 12 4" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="1.92051" cy="1.70045" rx="1.52597" ry="1.52076" fill="#3A354E"/><ellipse cx="5.99082" cy="1.70045" rx="1.52597" ry="1.52076" fill="#3A354E"/><ellipse cx="10.0572" cy="1.70045" rx="1.52597" ry="1.52076" fill="#3A354E"/></svg></button><div class="am-agent-menu"><button type="button" class="am-new-chat-btn" aria-label="New chat">New Chat</button><button type="button" class="am-pin-btn" aria-label="Pin">Pin</button></div>';
+        menuCont.innerHTML = '<button type="button" class="am-agent-menu-btn" aria-label="Open menu"><svg width="12" height="4" viewBox="0 0 12 4" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="1.92051" cy="1.70045" rx="1.52597" ry="1.52076" fill="#3A354E"/><ellipse cx="5.99082" cy="1.70045" rx="1.52597" ry="1.52076" fill="#3A354E"/><ellipse cx="10.0572" cy="1.70045" rx="1.52597" ry="1.52076" fill="#3A354E"/></svg></button><div class="am-agent-menu"><button type="button" class="am-new-chat-btn" aria-label="New chat">New Chat</button><button type="button" class="am-pin-btn" aria-label="Unpin">Unpin</button></div>';
         li.appendChild(menuCont);
         list.insertBefore(li, list.firstChild);
       });
@@ -219,7 +225,10 @@
           pins.push(data);
           savePins(pins);
           item.classList.add('pinned');
+          const list = item.parentElement;
+          if (list) list.insertBefore(item, list.firstChild);
         }
+        pinBtn.textContent = item.classList.contains('pinned') ? 'Unpin' : 'Pin';
         pinBtn.closest('.am-agent-menu')?.classList.remove('open');
         return;
       }
