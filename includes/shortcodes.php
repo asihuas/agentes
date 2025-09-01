@@ -269,7 +269,7 @@ add_shortcode('am_chat', function(){
           const r = await fetch(REST + 'am/v1/chat', {
             method:'POST',
             headers:{ 'Content-Type':'application/json','X-WP-Nonce': NONCE },
-            body: JSON.stringify({ agent_id: agentId, message: text, conversation_uid: convUid })
+            body: JSON.stringify({ agent_id: agentId, message: text, conversation_uid: convUid, options: window.AM_CHAT_OPTS || {} })
           });
           const data = await r.json();
           if (data && data.conversation_uid) {
@@ -284,6 +284,10 @@ add_shortcode('am_chat', function(){
           }
           const reply = sanitizeReply(String((data && data.reply) || '...'));
           logMessage('ai', reply);
+          const plain = reply.replace(/<[^>]+>/g, '');
+          if (window.AM_addPlayToLastAIBubble) {
+            window.AM_addPlayToLastAIBubble(plain);
+          }
           if (window.AM_AUTO_AUDIO) {
             setState('Speaking...');
             await ttsPlay(reply);
@@ -472,7 +476,7 @@ function am_render_conversations_shortcode(){
 </button>
               <div class="am-agent-menu">
                 <button type="button" class="am-new-chat-btn" aria-label="New chat"><img src="https://wa4u.ai/wp-content/uploads/2025/09/new-chat-1.svg" alt="new chat">New Chat</button>
-                <button type="button" class="am-ping-btn" aria-label="Ping"><img src="https://wa4u.ai/wp-content/uploads/2025/09/pin.svg" alt="pin">Ping</button>
+                <button type="button" class="am-pin-btn" aria-label="Pin"><img src="https://wa4u.ai/wp-content/uploads/2025/09/pin.svg" alt="pin">Pin</button>
               </div>
             </div>
             
@@ -533,6 +537,47 @@ function am_format_date_group($date) {
   if ($days_ago <= 7) return $days_ago . ' days ago';
   return date('F j, Y', strtotime($date));
 }
+
+// Shortcode for minimal chat customization options
+function am_chat_options_shortcode(){
+  ob_start(); ?>
+  <div class="am-chat-options">
+    <label>Tone:
+      <select id="am-chat-tone">
+        <option value="">Default</option>
+        <option value="friendly">Friendly</option>
+        <option value="professional">Professional</option>
+        <option value="humorous">Humorous</option>
+      </select>
+    </label>
+    <label>Length:
+      <select id="am-chat-length">
+        <option value="">Default</option>
+        <option value="concise">Concise</option>
+        <option value="detailed">Detailed</option>
+      </select>
+    </label>
+  </div>
+  <script>
+  (function(){
+    const toneSel = document.getElementById('am-chat-tone');
+    const lenSel = document.getElementById('am-chat-length');
+    function update(){
+      window.AM_CHAT_OPTS = {
+        tone: toneSel ? toneSel.value : '',
+        length: lenSel ? lenSel.value : ''
+      };
+    }
+    toneSel && toneSel.addEventListener('change', update);
+    lenSel && lenSel.addEventListener('change', update);
+    update();
+  })();
+  </script>
+  <?php
+  return ob_get_clean();
+}
+add_shortcode('am_chat_options','am_chat_options_shortcode');
+add_shortcode('am-chat-options','am_chat_options_shortcode');
 
 // Shortcode to toggle automatic audio playback of chat responses
 function am_audio_toggle_button(){
