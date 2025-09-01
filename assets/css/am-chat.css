@@ -1,0 +1,658 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v8.4.14,
+* Autoprefixer: v10.4.7
+* Browsers: last 4 version
+*/
+
+/* ============================
+   LISTAS DE AGENTES Y CHATS
+============================ */
+.am-agent-list,
+.am-chat-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.am-agent-item,
+.am-chat-item {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.am-agent-avatar,
+.am-chat-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  -o-object-fit: cover;
+     object-fit: cover;
+  margin-right: 10px;
+}
+
+.am-agent-name,
+.am-chat-name {
+  font-weight: bold;
+  margin-right: auto;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 8px;
+}
+
+.am-chat-menu-container,
+.am-agent-menu-container {
+  position: relative;
+}
+
+.am-chat-menu-btn,
+.am-agent-menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* ============================
+   MENÚS DE CHAT Y AGENTES
+============================ */
+.am-chat-menu,
+.am-agent-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  -webkit-box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  z-index: 10;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  gap: 5px;
+  border-radius: 4px;
+  padding: 5px;
+  visibility: hidden;
+  opacity: 0;
+  -webkit-transition: .2s ease all;
+  -o-transition: .2s ease all;
+  transition: .2s ease all;
+  min-width: 130px;
+}
+
+.am-chat-menu.open,
+.am-agent-menu.open {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  z-index: 99;
+}
+
+.am-chat-menu button,
+.am-agent-menu button {
+  display: block;
+  width: 100%;
+  padding: 5px 10px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 7px;
+}
+
+.am-chat-menu button:hover,
+.am-agent-menu button:hover {
+  background: #f0f0f0;
+}
+
+.am-chat-menu .am-delete-btn,
+.am-chat-menu .am-rename-btn,
+.am-agent-menu .am-new-chat-btn,
+.am-agent-menu .am-ping-btn {
+  font-size: 13px;
+  background: none;
+  border: none;
+  color: #3A354E;
+  padding: 5px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-family: "Inter", Sans-serif !important;
+  font-weight: 500 !important;
+}
+.am-chat-menu img,
+.am-chat-menu img,
+.am-agent-menu img,
+.am-agent-menu img {
+    width: 20px !important;
+    height: 20px !important;
+    -o-object-fit: contain !important;
+       object-fit: contain !important;
+}
+.am-chat-menu .am-delete-btn:hover,
+.am-chat-menu .am-rename-btn:hover {
+  background-color: #c95959;
+  color: #fff !important;
+}
+
+.am-chat-menu button:hover * {
+  color: #fff !important;
+}
+
+/* ============================
+   HEADER
+============================ */
+.assistant-header {
+  position: relative;
+  -webkit-transition: opacity .2s ease, -webkit-transform .2s ease;
+  transition: opacity .2s ease, -webkit-transform .2s ease;
+  -o-transition: opacity .2s ease, transform .2s ease;
+  transition: opacity .2s ease, transform .2s ease;
+  transition: opacity .2s ease, transform .2s ease, -webkit-transform .2s ease;
+  will-change: opacity, transform;
+}
+
+.am-header-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.assistant-meta .assistant-complement {
+  font-style: italic;
+  opacity: .8;
+  margin: 0;
+}
+
+.am-voice-meter {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  width: 0;
+  background: -webkit-gradient(linear,left top, right top,from(#6a5acd),to(#00bcd4));
+  background: -o-linear-gradient(left,#6a5acd,#00bcd4);
+  background: linear-gradient(90deg,#6a5acd,#00bcd4);
+  -webkit-transition: width .1s linear;
+  -o-transition: width .1s linear;
+  transition: width .1s linear;
+}
+
+/* ============================
+   BURBUJAS DE CHAT
+============================ */
+.openai-bubble {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 4px;
+  margin: 8px 0;
+  margin-top: 12px;
+}
+
+.openai-bubble .avatar {
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 auto;
+          flex: 0 0 auto;
+  background: transparent;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.openai-bubble .bubble {
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.06);
+          box-shadow: 0 1px 2px rgba(0,0,0,.06);
+  max-width: 720px;
+}
+
+.openai-bubble.user .bubble {
+  background: #e8f2ff;
+}
+
+.openai-bubble .bubble ul,
+.openai-bubble .bubble ol {
+  margin: 0;
+  padding-left: 1.25em;
+}
+
+.openai-bubble .bubble ul {
+  list-style: disc;
+}
+
+.openai-bubble .bubble ol {
+  list-style: decimal;
+}
+
+/* ============================
+   SUGERENCIAS RÁPIDAS
+============================ */
+.am-suggestions {
+  margin: 8px 0 0 0;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  gap: 6px;
+}
+
+.am-suggestion-chip {
+  border: 1px solid #e0e0e0;
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: #fafafa;
+  cursor: pointer;
+}
+
+.am-feedback-row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.openai-bubble.ai + .am-suggestions,
+.openai-bubble.ai + .am-feedback-row {
+  margin-left: 52px;
+}
+
+/* ============================
+   BOTONES DE REPRODUCCIÓN Y TIMER
+============================ */
+.play-btn {
+  margin-left: 8px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.am-audio-toggle {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  display: -ms-grid;
+  display: grid;
+  place-content: center;
+}
+
+.timer-icon {
+  -webkit-animation: am-rotate 1s linear infinite;
+          animation: am-rotate 1s linear infinite;
+}
+
+@-webkit-keyframes am-rotate {
+  from { -webkit-transform: rotate(0); transform: rotate(0); }
+  to   { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
+}
+
+@keyframes am-rotate {
+  from { -webkit-transform: rotate(0); transform: rotate(0); }
+  to   { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
+}
+
+/* ============================
+   FORMULARIO DE CHAT
+============================ */
+.openai-chat-form textarea {
+  resize: none;
+  line-height: 1.4;
+  overflow-y: hidden;
+  width: 100%;
+  padding: 14px 48px 14px 16px;
+  outline: none !important;
+}
+
+.openai-chat-form textarea::-webkit-input-placeholder {
+  line-height: 24px;
+}
+
+.openai-chat-form textarea::-moz-placeholder {
+  line-height: 24px;
+}
+
+.openai-chat-form textarea:-ms-input-placeholder {
+  line-height: 24px;
+}
+
+.openai-chat-form textarea::-ms-input-placeholder {
+  line-height: 24px;
+}
+
+.openai-chat-form textarea::placeholder {
+  line-height: 24px;
+}
+
+.openai-chat-form textarea:-moz-placeholder-shown {
+  line-height: 24px;
+}
+
+.openai-chat-form textarea:-ms-input-placeholder {
+  line-height: 24px;
+}
+
+.openai-chat-form textarea:placeholder-shown {
+  line-height: 24px;
+}
+
+.openai-input-group {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 8px;
+  -webkit-box-align: end;
+      -ms-flex-align: end;
+          align-items: flex-end;
+}
+
+.openai-input-inner {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: end;
+      -ms-flex-align: end;
+          align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+  position: relative;
+}
+
+.voice-btn.listening {
+  opacity: 1;
+  scale: 1.2;
+}
+
+.am-stt-loading {
+  position: absolute;
+  inset: 0;
+  background: #F5F1FB;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  font-size: 14px;
+  color: #3A354E;
+  z-index: 5;
+  border-radius: 30px;
+    
+}
+.am-stt-loading img{
+-webkit-animation: spin 1s linear infinite;
+        animation: spin 1s linear infinite;
+}
+/* ============================
+   BANNER ESCALATION OFF
+============================ */
+.am-escalation-banner {
+  display: none !important;
+}
+
+/* ============================
+   BOTONES DE FEEDBACK FLOTANTES
+============================ */
+.am-feedback-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 8px;
+  z-index: 99999;
+}
+
+.am-feedback-fab button {
+  border: 0;
+  border-radius: 999px;
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+  cursor: pointer;
+  background: #ffffff;
+  -webkit-box-shadow: 0 4px 14px rgba(0,0,0,.15);
+          box-shadow: 0 4px 14px rgba(0,0,0,.15);
+}
+
+.am-feedback-fab button:hover {
+  -webkit-transform: translateY(-1px);
+      -ms-transform: translateY(-1px);
+          transform: translateY(-1px);
+}
+
+/* ============================
+   VOICE CALL OVERLAY
+============================ */
+.am-voice-call-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #5B5086;
+  z-index: 99999;
+  display: -ms-grid;
+  display: grid;
+  place-content: center;
+  gap: 32px;
+  color: #fff;
+  text-align: center;
+}
+
+.am-voice-call-overlay .am-voice-avatar-wrap {
+  position: relative;
+  width: 160px;
+  height: 160px;
+}
+
+.am-voice-call-overlay .assistant-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  z-index: 2;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
+.am-voice-call-overlay .am-voice-level {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: -o-radial-gradient(circle, #B3AAE4 0%, rgb(91 80 134) 50%, rgb(91 80 134) 100%);
+  background: radial-gradient(circle, #B3AAE4 0%, rgb(91 80 134) 50%, rgb(91 80 134) 100%);
+  -webkit-transform: scale(1);
+      -ms-transform: scale(1);
+          transform: scale(1);
+  -webkit-transition: -webkit-transform .2s;
+  transition: -webkit-transform .2s;
+  -o-transition: transform .2s;
+  transition: transform .2s;
+  transition: transform .2s, -webkit-transform .2s;
+  z-index: -1;
+  bottom: -100%;
+}
+
+.am-voice-call-btn {
+  padding: 12px 24px;
+  font-size: 18px;
+  border-radius: 8px;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.am-voice-call-controls {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 16px;
+}
+
+.am-voice-call-controls button {
+  padding: 0 !important;
+  background: transparent;
+}
+
+.am-voice-call-controls button:focus,
+.am-voice-call-controls button:hover {
+  scale: 1.1;
+  background: transparent;
+}
+
+.am-voice-call-controls img {
+  width: 100%;
+}
+
+.am-voice-call-mute {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #555;
+  border: none;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  cursor: pointer;
+}
+
+.am-voice-call-mute svg {
+  stroke: #fff;
+}
+
+.am-voice-call-mute.muted {
+  background: #777;
+}
+
+.am-voice-call-end {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  border: none;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  cursor: pointer;
+}
+
+.am-voice-call-end svg {
+  stroke: #fff;
+}
+
+/* ============================
+   SEARCH INPUT
+============================ */
+.am-search-input-wrapper {
+  position: relative;
+  margin-bottom: 45px;
+}
+
+.am-search-input-wrapper svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+      -ms-transform: translateY(-50%);
+          transform: translateY(-50%);
+  z-index: 1;
+  width: 20px;
+}
+
+.am-search-input {
+  border: none !important;
+  background-color: #F5E9F5;
+  outline: none !important;
+  border-radius: 40px !important;
+  padding-left: 45px !important;
+  margin-bottom: 0px !important;
+}
+
+/* ============================
+   AGENT LIST HEADER
+============================ */
+ul.am-agent-list:before {
+  content: 'Recent Coaches';
+  font-weight: 600;
+  font-size: 17px;
+  color: #3A354E;
+  font-family: "DM Sans", Sans-serif !important;
+}
+
+ul.am-agent-list li {
+  padding: 5px;
+  border-radius: 50px;
+  -webkit-transition: .4s ease all;
+  -o-transition: .4s ease all;
+  transition: .4s ease all;
+}
+
+ul.am-agent-list li:hover {
+  background-color: #F5E9F5;
+}
+
+ul.am-agent-list li:first-child {
+  margin-top: 15px;
+}
+
+.am-agent-item img.pinned-icon {
+  display: none;
+  position: absolute;
+  width: 20px !important;
+  height: 20px !important;
+  top: -5px;
+  right: -5px;
+}
+
+.am-agent-item.pinned img.pinned-icon {
+  display: block;
+}
+
+.am-agent-item.pinned:before{
+  content: '';
+  position: absolute;
+  width: 20px !important;
+  height: 20px !important;
+  top: -5px;
+  right: -5px;
+  background-image: url(https://wa4u.ai/wp-content/uploads/2025/09/pin.svg);
+  background-size: contain;
+}
