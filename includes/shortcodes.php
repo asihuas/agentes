@@ -540,10 +540,11 @@ function am_format_date_group($date) {
 
 // Shortcode for minimal chat customization options
 function am_chat_options_shortcode(){
+  $uid = wp_generate_uuid4();
   ob_start(); ?>
   <div class="am-chat-options">
     <label>Tone:
-      <select id="am-chat-tone">
+      <select id="am-chat-tone-<?php echo esc_attr($uid); ?>">
         <option value="">Default</option>
         <option value="friendly">Friendly</option>
         <option value="professional">Professional</option>
@@ -551,7 +552,7 @@ function am_chat_options_shortcode(){
       </select>
     </label>
     <label>Length:
-      <select id="am-chat-length">
+      <select id="am-chat-length-<?php echo esc_attr($uid); ?>">
         <option value="">Default</option>
         <option value="concise">Concise</option>
         <option value="detailed">Detailed</option>
@@ -560,17 +561,32 @@ function am_chat_options_shortcode(){
   </div>
   <script>
   (function(){
-    const toneSel = document.getElementById('am-chat-tone');
-    const lenSel = document.getElementById('am-chat-length');
-    function update(){
-      window.AM_CHAT_OPTS = {
+    const toneSel = document.getElementById('am-chat-tone-<?php echo esc_attr($uid); ?>');
+    const lenSel  = document.getElementById('am-chat-length-<?php echo esc_attr($uid); ?>');
+    const params = new URLSearchParams(location.search);
+    const cid    = params.get('cid') || '';
+    const agent  = params.get('agent_id') || '0';
+    const key    = `amChatOpts-${cid || 'agent-' + agent}`;
+
+    window.AM_CHAT_OPTS = window.AM_CHAT_OPTS || {};
+
+    function save(){
+      const opts = {
         tone: toneSel ? toneSel.value : '',
         length: lenSel ? lenSel.value : ''
       };
+      localStorage.setItem(key, JSON.stringify(opts));
+      window.AM_CHAT_OPTS[key] = opts;
     }
-    toneSel && toneSel.addEventListener('change', update);
-    lenSel && lenSel.addEventListener('change', update);
-    update();
+
+    let stored = {};
+    try { stored = JSON.parse(localStorage.getItem(key) || '{}'); } catch(_){ stored = {}; }
+    if (toneSel && stored.tone) toneSel.value = stored.tone;
+    if (lenSel && stored.length) lenSel.value = stored.length;
+
+    toneSel && toneSel.addEventListener('change', save);
+    lenSel && lenSel.addEventListener('change', save);
+    save();
   })();
   </script>
   <?php

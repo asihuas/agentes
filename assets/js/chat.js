@@ -29,6 +29,10 @@
     const avatarUrl     = root.dataset.avatarUrl || '';
     const scrollIcon    = root.dataset.scrollIcon || 'https://wa4u.ai/wp-content/uploads/2025/08/nav-arrow-down.svg';
 
+    function getChatKey(){
+      return `amChatOpts-${convUid || 'agent-' + agentId}`;
+    }
+
     // -----------------------
     // AUTO-SCROLL + BOTÓN FIXED
     // -----------------------
@@ -362,7 +366,7 @@
           agent_id: agentId,
           message: text,
           conversation_uid: convUid || '',
-          options: window.AM_CHAT_OPTS || {}
+          options: (window.AM_CHAT_OPTS && window.AM_CHAT_OPTS[getChatKey()]) || {}
         };
 
         console.log('Sending request:', {
@@ -406,18 +410,25 @@
         // Notify conversation update
         if (data && data.conversation_uid) {
           convUid = data.conversation_uid;
-          
+
+          const oldKey = `amChatOpts-agent-${agentId}`;
+          const newKey = getChatKey();
+          if (window.AM_CHAT_OPTS && window.AM_CHAT_OPTS[oldKey] && !window.AM_CHAT_OPTS[newKey]) {
+            window.AM_CHAT_OPTS[newKey] = window.AM_CHAT_OPTS[oldKey];
+            try { localStorage.setItem(newKey, JSON.stringify(window.AM_CHAT_OPTS[oldKey])); } catch (_){ }
+          }
+
           // Update URL
           const url = new URL(window.location.href);
           url.searchParams.set('agent_id', String(agentId));
           url.searchParams.set('cid', String(convUid));
           window.history.replaceState({}, '', url.toString());
-          
+
           // Dispatch event for history update
           window.dispatchEvent(new CustomEvent('am:conversation-updated', {
-            detail: { 
+            detail: {
               cid: convUid,
-              agentId, 
+              agentId,
               title: text.slice(0, 60),
               avatarUrl,
               assistantName 
