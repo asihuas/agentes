@@ -261,7 +261,7 @@ add_shortcode('am_chat', function(){
         await audio.play().catch(()=>{ /* autoplay blocked */ });
       }
 
-      async function askAssistant(text){
+      async function askAssistant(text, forceAudio = false){
         if (busy) return;
         busy = true;
         setState('Thinking...');
@@ -291,7 +291,7 @@ add_shortcode('am_chat', function(){
           if (window.AM_addPlayToLastAIBubble) {
             window.AM_addPlayToLastAIBubble(plain);
           }
-          if (window.AM_AUTO_AUDIO) {
+          if (window.AM_AUTO_AUDIO || forceAudio) {
             setState('Speaking...');
             await ttsPlay(reply);
             setState('Listening');
@@ -331,7 +331,7 @@ add_shortcode('am_chat', function(){
               const j = await r.json();
               if (j && j.text) {
                 setState('Processing');
-                askAssistant(j.text.trim());
+                askAssistant(j.text.trim(), true);
               }
             } catch(err){
               logMessage('system', 'STT error');
