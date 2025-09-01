@@ -78,7 +78,7 @@
         li.appendChild(span);
         const menuCont = document.createElement('div');
         menuCont.className = 'am-agent-menu-container';
-        menuCont.innerHTML = '<button type="button" class="am-agent-menu-btn" aria-label="Open menu"><svg width="12" height="4" viewBox="0 0 12 4" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="1.92051" cy="1.70045" rx="1.52597" ry="1.52076" fill="#3A354E"/><ellipse cx="5.99082" cy="1.70045" rx="1.52597" ry="1.52076" fill="#3A354E"/><ellipse cx="10.0572" cy="1.70045" rx="1.52597" ry="1.52076" fill="#3A354E"/></svg></button><div class="am-agent-menu"><button type="button" class="am-new-chat-btn" aria-label="New chat">New Chat</button><button type="button" class="am-ping-btn" aria-label="Ping">Ping</button></div>';
+        menuCont.innerHTML = '<button type="button" class="am-agent-menu-btn" aria-label="Open menu"><svg width="12" height="4" viewBox="0 0 12 4" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="1.92051" cy="1.70045" rx="1.52597" ry="1.52076" fill="#3A354E"/><ellipse cx="5.99082" cy="1.70045" rx="1.52597" ry="1.52076" fill="#3A354E"/><ellipse cx="10.0572" cy="1.70045" rx="1.52597" ry="1.52076" fill="#3A354E"/></svg></button><div class="am-agent-menu"><button type="button" class="am-new-chat-btn" aria-label="New chat">New Chat</button><button type="button" class="am-pin-btn" aria-label="Pin">Pin</button></div>';
         li.appendChild(menuCont);
         list.insertBefore(li, list.firstChild);
       });
@@ -100,6 +100,15 @@
       });
     }
     bindAgentMenus();
+
+    if (!cont.__docListener) {
+      cont.__docListener = (e) => {
+        if (!cont.contains(e.target)) {
+          cont.querySelectorAll('.am-chat-menu.open, .am-agent-menu.open').forEach(m => m.classList.remove('open'));
+        }
+      };
+      document.addEventListener('click', cont.__docListener);
+    }
 
     // --- Search filter ---
     const searchInput = cont.querySelector('.am-search-input');
@@ -187,11 +196,11 @@
         return;
       }
 
-      // Ping toggle
-      const pingBtn = e.target.closest('.am-ping-btn');
-      if (pingBtn) {
+      // Pin toggle
+      const pinBtn = e.target.closest('.am-pin-btn');
+      if (pinBtn) {
         e.stopPropagation();
-        const item = pingBtn.closest('.am-agent-item');
+        const item = pinBtn.closest('.am-agent-item');
         const id = item?.dataset?.agentId;
         if (!id) return;
         const pins = getPins();
@@ -211,7 +220,7 @@
           savePins(pins);
           item.classList.add('pinned');
         }
-        pingBtn.closest('.am-agent-menu')?.classList.remove('open');
+        pinBtn.closest('.am-agent-menu')?.classList.remove('open');
         return;
       }
 

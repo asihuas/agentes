@@ -126,7 +126,7 @@
 .am-chat-menu .am-delete-btn,
 .am-chat-menu .am-rename-btn,
 .am-agent-menu .am-new-chat-btn,
-.am-agent-menu .am-ping-btn {
+.am-agent-menu .am-pin-btn {
   font-size: 13px;
   background: none;
   border: none;
@@ -656,3 +656,20 @@ ul.am-agent-list li:first-child {
   background-image: url(https://wa4u.ai/wp-content/uploads/2025/09/pin.svg);
   background-size: contain;
 }
+
+/* Minimal chat customization options */
+.am-chat-options {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.am-chat-options label {
+  font-size: 13px;
+  color: #3A354E;
+}
+
+.am-chat-options select {
+  font-size: 13px;
+}
+

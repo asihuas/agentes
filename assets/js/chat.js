@@ -361,7 +361,8 @@
         const payload = {
           agent_id: agentId,
           message: text,
-          conversation_uid: convUid || ''
+          conversation_uid: convUid || '',
+          options: window.AM_CHAT_OPTS || {}
         };
 
         console.log('Sending request:', {
@@ -987,10 +988,12 @@ function extractSuggestions(raw, replyOrRaw) {
       btn.type = 'button';
       btn.className = 'play-btn';
       btn.setAttribute('data-text', text);
+      btn.setAttribute('aria-label', 'Play voice');
       btn.innerHTML =
         '<img src="https://wa4u.ai/wp-content/uploads/2025/08/play.svg" alt="Play" width="20" height="20">';
       last.appendChild(btn);
     }
+    window.AM_addPlayToLastAIBubble = addPlayToLastAIBubble;
 
     // ---------- Limpieza dura y chips fallback (sin JSON) ----------
     function sanitizeReply(text) {
