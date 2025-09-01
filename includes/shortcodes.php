@@ -102,10 +102,13 @@ add_shortcode('am_chat', function(){
       <?php if($avatar): ?>
         <div class="am-voice-avatar-wrap">
           <img class="assistant-avatar" src="<?php echo esc_url($avatar); ?>" alt="<?php echo esc_attr($name); ?>">
-          
+          <div class="am-voice-level"></div>
         </div>
-        <div class="am-voice-level"></div>
       <?php endif; ?>
+      <div class="assistant-meta">
+        <h2 class="assistant-name"><?php echo esc_html($name); ?></h2>
+        <p class="assistant-description"><?php echo esc_html($subtitle); ?></p>
+      </div>
       <div class="am-voice-call-controls">
         <button type="button" class="am-voice-call-mute" aria-label="Mute Microphone">
           <img class="am-mic-on" src="https://wa4u.ai/wp-content/uploads/2025/09/not-muted.svg" alt="mic on">
@@ -342,6 +345,9 @@ add_shortcode('am_chat', function(){
           setState('Idle');
         }
         busy = false;
+        if (mediaRecorder && mediaRecorder.state === 'inactive') {
+          try { mediaRecorder.start(4000); } catch(_) {}
+        }
         if (pendingChunk && !busy) {
           const b = pendingChunk; pendingChunk = null; await processChunk(b);
         }

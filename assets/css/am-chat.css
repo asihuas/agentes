@@ -500,6 +500,20 @@
   bottom: -100%;
 }
 
+.am-voice-call-overlay .assistant-meta {
+  text-align: center;
+}
+
+.am-voice-call-overlay .assistant-name {
+  margin: 16px 0 4px;
+  font-size: 24px;
+}
+
+.am-voice-call-overlay .assistant-description {
+  margin: 0;
+  opacity: .8;
+}
+
 .am-voice-call-btn {
   padding: 12px 24px;
   font-size: 18px;
