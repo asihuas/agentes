@@ -79,7 +79,6 @@ add_shortcode('am_chat', function(){
         <p class="assistant-description"><?php echo esc_html($subtitle); ?></p>
         <?php if($complement): ?><p class="assistant-complement"><?php echo esc_html($complement); ?></p><?php endif; ?>
       </div>
-      <div class="am-voice-meter"></div>
     </div>
     <div id="openai-messages" class="openai-messages"></div>
     <form id="openai-chat-form" class="openai-chat-form" autocomplete="off" onsubmit="return false;">
@@ -102,7 +101,6 @@ add_shortcode('am_chat', function(){
       <?php if($avatar): ?>
         <div class="am-voice-avatar-wrap">
           <img class="assistant-avatar" src="<?php echo esc_url($avatar); ?>" alt="<?php echo esc_attr($name); ?>">
-          <div class="am-voice-level"></div>
         </div>
       <?php endif; ?>
       <div class="assistant-meta">
@@ -118,6 +116,7 @@ add_shortcode('am_chat', function(){
           <img src="https://wa4u.ai/wp-content/uploads/2025/09/END-CALL.svg" alt="end-call">
         </button>
       </div>
+      <div class="am-voice-level"></div>
     </div>
 
     <script>
@@ -135,6 +134,9 @@ add_shortcode('am_chat', function(){
       const muteBtn = overlay.querySelector('.am-voice-call-mute');
 
       let convUid = new URLSearchParams(location.search).get('cid') || '';
+      window.addEventListener('am:conversation-updated', e => {
+        if (e && e.detail && e.detail.cid) convUid = e.detail.cid;
+      });
       let busy = false;
       let mediaRecorder = null;
       let currentAudio = null;
@@ -187,7 +189,7 @@ add_shortcode('am_chat', function(){
         micVizInterval = setInterval(()=>{
           const lvl = micLevel();
           const scale = 1 + Math.min(0.3, lvl*2);
-          levelCircle.style.transform = `scale(${scale.toFixed(2)})`;
+          levelCircle.style.transform = `translate(-50%, -50%) scale(${scale.toFixed(2)})`;
         },100);
       }
 
@@ -209,10 +211,10 @@ add_shortcode('am_chat', function(){
           for (let i=0;i<ttsData.length;i++){ const v = (ttsData[i]-128)/128; sum += v*v; }
           const lvl = Math.sqrt(sum/ttsData.length);
           const scale = 1 + Math.min(0.3, lvl*2);
-          levelCircle.style.transform = `scale(${scale.toFixed(2)})`;
+          levelCircle.style.transform = `translate(-50%, -50%) scale(${scale.toFixed(2)})`;
         },100);
         const clear = () => {
-          clearInterval(ttsVizInterval); ttsVizInterval=null; levelCircle.style.transform='scale(1)';
+          clearInterval(ttsVizInterval); ttsVizInterval=null; levelCircle.style.transform='translate(-50%, -50%) scale(1)';
           try { ttsCtx.close(); } catch(_) {}
         };
         audio.addEventListener('ended', clear, {once:true});
@@ -401,6 +403,7 @@ add_shortcode('am_chat', function(){
       }
 
       btn.addEventListener('click', function(){
+        convUid = new URLSearchParams(location.search).get('cid') || convUid;
         overlay.style.display = 'grid';
         btn.style.display = 'none';
         setState('Initializing…');
@@ -443,6 +446,7 @@ add_shortcode('am_chat', function(){
         if (ttsVizInterval){ clearInterval(ttsVizInterval); ttsVizInterval=null; }
         if (ttsCtx){ try{ ttsCtx.close(); } catch(_){} ttsCtx=null; }
         if (avatarImg) avatarImg.style.transform='scale(1)';
+        if (levelCircle) levelCircle.style.transform='translate(-50%, -50%) scale(1)';
         if (micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; }
         if (mediaRecorder && mediaRecorder.stream){ mediaRecorder.stream.getTracks().forEach(t=> t.stop()); }
         mediaRecorder = null;

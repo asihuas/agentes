@@ -181,20 +181,6 @@
   margin: 0;
 }
 
-.am-voice-meter {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 4px;
-  width: 0;
-  background: -webkit-gradient(linear,left top, right top,from(#6a5acd),to(#00bcd4));
-  background: -o-linear-gradient(left,#6a5acd,#00bcd4);
-  background: linear-gradient(90deg,#6a5acd,#00bcd4);
-  -webkit-transition: width .1s linear;
-  -o-transition: width .1s linear;
-  transition: width .1s linear;
-}
-
 /* ============================
    BURBUJAS DE CHAT
 ============================ */
@@ -466,38 +452,41 @@
   text-align: center;
 }
 
+
 .am-voice-call-overlay .am-voice-avatar-wrap {
   position: relative;
   width: 160px;
   height: 160px;
+  z-index: 1;
 }
 
 .am-voice-call-overlay .assistant-avatar {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  position: relative;
-  z-index: 2;
   -o-object-fit: cover;
      object-fit: cover;
 }
 
 .am-voice-call-overlay .am-voice-level {
   position: absolute;
-  inset: 0;
+  top: 50%;
+  left: 50%;
+  width: 160px;
+  height: 160px;
   border-radius: 50%;
   background: -o-radial-gradient(circle, #B3AAE4 0%, rgb(91 80 134) 50%, rgb(91 80 134) 100%);
   background: radial-gradient(circle, #B3AAE4 0%, rgb(91 80 134) 50%, rgb(91 80 134) 100%);
-  -webkit-transform: scale(1);
-      -ms-transform: scale(1);
-          transform: scale(1);
+  -webkit-transform: translate(-50%, -50%) scale(1);
+      -ms-transform: translate(-50%, -50%) scale(1);
+          transform: translate(-50%, -50%) scale(1);
   -webkit-transition: -webkit-transform .2s;
   transition: -webkit-transform .2s;
   -o-transition: transform .2s;
   transition: transform .2s;
   transition: transform .2s, -webkit-transform .2s;
-  z-index: -1;
-  bottom: -100%;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .am-voice-call-overlay .assistant-meta {

@@ -157,51 +157,6 @@
       inputInner.appendChild(sttOverlay);
     }
 
-    const meterEl = root.querySelector('.am-voice-meter');
-    let meterCtx = null;
-    let analyser = null;
-    let meterData = null;
-    let meterAnim = null;
-
-    function stopMeter() {
-      if (meterAnim) cancelAnimationFrame(meterAnim);
-      meterAnim = null;
-      if (meterCtx) { try { meterCtx.close(); } catch (_) {} meterCtx = null; }
-      if (meterEl) meterEl.style.width = '0%';
-    }
-
-    function startMeter(src, isStream = true) {
-      if (!meterEl) return;
-      stopMeter();
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      meterCtx = new AudioCtx();
-      analyser = meterCtx.createAnalyser();
-      analyser.fftSize = 256;
-      let source = null;
-      if (isStream) {
-        source = meterCtx.createMediaStreamSource(src);
-      } else {
-        source = meterCtx.createMediaElementSource(src);
-        source.connect(meterCtx.destination);
-        src.addEventListener('ended', stopMeter, { once: true });
-        src.addEventListener('pause', stopMeter, { once: true });
-      }
-      source.connect(analyser);
-      meterData = new Uint8Array(analyser.fftSize);
-      const loop = () => {
-        analyser.getByteTimeDomainData(meterData);
-        let sum = 0;
-        for (let i = 0; i < meterData.length; i++) {
-          const v = (meterData[i] - 128) / 128;
-          sum += v * v;
-        }
-        const rms = Math.sqrt(sum / meterData.length);
-        const width = Math.min(100, Math.max(0, rms * 200));
-        meterEl.style.width = width + '%';
-        meterAnim = requestAnimationFrame(loop);
-      };
-      loop();
-    }
 
     if (input && callBtn) {
       toggleCallBtn = () => {
@@ -238,7 +193,6 @@
             micStream.getTracks().forEach((t) => t.stop());
             micStream = null;
           }
-          stopMeter();
           if (sttOverlay) {
             sttOverlay.innerHTML = transcribingImg
               ? `<img src="${transcribingImg}" alt="Transcribing...">`
@@ -289,8 +243,6 @@
           if (callBtn) callBtn.style.display = 'none';
           mediaRecorder = null;
         };
-        startMeter(micStream, true);
-
         mediaRecorder.start();
         isRecording = true;
         updateVoiceBtn('listening');
@@ -618,7 +570,6 @@ messagesEl.addEventListener('click', async (e) => {
     // Create and play audio
     const audioUrl = URL.createObjectURL(blob);
     const audio = new Audio(audioUrl);
-    startMeter(audio, false);
     btn._audio = audio;
     btn._audioUrl = audioUrl;
 
@@ -630,7 +581,6 @@ messagesEl.addEventListener('click', async (e) => {
       if (btn._audioUrl) {
         try { URL.revokeObjectURL(btn._audioUrl); } catch (_) {}
       }
-      stopMeter();
       btn._audio = null;
       btn._audioUrl = null;
       btn._reset = null;
