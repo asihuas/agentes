@@ -436,6 +436,11 @@
         const replyHtml = sanitizeReply(rawReply);
         const replyText = stripHtml(replyHtml);
 
+        // Prepare TTS as early as possible
+        addPlayToLastAIBubble(replyText);
+        const lastPlayBtn = typing.querySelector('.play-btn');
+        if (lastPlayBtn && window.AM_AUTO_AUDIO) lastPlayBtn.click();
+
         const bubbleEl = typing.querySelector('.bubble');
         await typeInto(bubbleEl, escapeHtml(replyText));
         bubbleEl.innerHTML = replyHtml;
@@ -465,10 +470,7 @@
         const row = typing.querySelector('.am-feedback-row');
         if (row) addFeedbackButtons(row, replyText, data.assistant_message_id);
 
-        // Automatically play TTS for every assistant response when enabled
-        addPlayToLastAIBubble(replyText);
-        const lastPlayBtn = typing.querySelector('.play-btn');
-        if (lastPlayBtn && window.AM_AUTO_AUDIO) lastPlayBtn.click(); // Trigger TTS playback automatically
+        // Automatically play TTS button added earlier
       } catch (err) {
         console.error('Chat error:', err);
         const b = typing.querySelector('.bubble');

@@ -660,8 +660,14 @@ ul.am-agent-list li:first-child {
 /* Minimal chat customization options */
 .am-chat-options {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  background: #f7f7f8;
+  border-radius: 8px;
   margin-bottom: 10px;
+  max-width: 220px;
 }
 
 .am-chat-options label {
@@ -669,7 +675,40 @@ ul.am-agent-list li:first-child {
   color: #3A354E;
 }
 
-.am-chat-options select {
+.am-chat-options select,
+.am-chat-options button {
   font-size: 13px;
+  border: none;
+  background: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.am-chat-options button {
+  background: #3A354E;
+  color: #fff;
+  cursor: pointer;
+}
+
+.am-chat-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.am-chat-info-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.am-chat-toast {
+  font-size: 12px;
+  color: #fff;
+  background: #3A354E;
+  padding: 2px 6px;
+  border-radius: 4px;
+  align-self: flex-end;
 }
 
