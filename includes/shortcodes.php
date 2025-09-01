@@ -135,6 +135,9 @@ add_shortcode('am_chat', function(){
       let busy = false;
       let mediaRecorder = null;
       let currentAudio = null;
+      let pendingChunk = null;
+      let mime = 'audio/webm';
+      let lang = document.querySelector('.openai-chat-container')?.dataset?.sttLang || 'en-US';
 
       let micCtx = null;
       let micAnalyser = null;
@@ -144,6 +147,11 @@ add_shortcode('am_chat', function(){
       let micMuted = false;
       const avatarImg = overlay.querySelector('.assistant-avatar');
       const levelCircle = overlay.querySelector('.am-voice-level');
+
+      let ttsCtx = null;
+      let ttsAnalyser = null;
+      let ttsData = null;
+      let ttsVizInterval = null;
 
       async function initMicMonitor(){
         try {
@@ -178,6 +186,34 @@ add_shortcode('am_chat', function(){
           const scale = 1 + Math.min(0.3, lvl*2);
           levelCircle.style.transform = `scale(${scale.toFixed(2)})`;
         },100);
+      }
+
+      function startTtsViz(audio){
+        if (!levelCircle) return;
+        if (ttsVizInterval) clearInterval(ttsVizInterval);
+        if (ttsCtx) { try { ttsCtx.close(); } catch(_) {} }
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        ttsCtx = new AudioCtx();
+        const src = ttsCtx.createMediaElementSource(audio);
+        ttsAnalyser = ttsCtx.createAnalyser();
+        ttsAnalyser.fftSize = 2048;
+        src.connect(ttsAnalyser);
+        ttsAnalyser.connect(ttsCtx.destination);
+        ttsData = new Uint8Array(ttsAnalyser.fftSize);
+        ttsVizInterval = setInterval(()=>{
+          ttsAnalyser.getByteTimeDomainData(ttsData);
+          let sum = 0;
+          for (let i=0;i<ttsData.length;i++){ const v = (ttsData[i]-128)/128; sum += v*v; }
+          const lvl = Math.sqrt(sum/ttsData.length);
+          const scale = 1 + Math.min(0.3, lvl*2);
+          levelCircle.style.transform = `scale(${scale.toFixed(2)})`;
+        },100);
+        const clear = () => {
+          clearInterval(ttsVizInterval); ttsVizInterval=null; levelCircle.style.transform='scale(1)';
+          try { ttsCtx.close(); } catch(_) {}
+        };
+        audio.addEventListener('ended', clear, {once:true});
+        audio.addEventListener('pause', clear, {once:true});
       }
 
       function setState(s){ /* no visible state */ }
@@ -228,6 +264,7 @@ add_shortcode('am_chat', function(){
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         currentAudio = audio;
+        startTtsViz(audio);
 
         if (!micAnalyser) await initMicMonitor();
         let micInterval;
@@ -251,14 +288,16 @@ add_shortcode('am_chat', function(){
           }, 100);
         }
 
-        audio.addEventListener('ended', () => {
-          URL.revokeObjectURL(url);
-          if (micInterval) clearInterval(micInterval);
-          if (overlay.style.display === 'block') startMicViz();
-          currentAudio = null;
+        await new Promise((resolve) => {
+          audio.addEventListener('ended', () => {
+            URL.revokeObjectURL(url);
+            if (micInterval) clearInterval(micInterval);
+            if (overlay.style.display === 'block') startMicViz();
+            currentAudio = null;
+            resolve();
+          }, { once: true });
+          audio.play().catch(() => { resolve(); });
         });
-
-        await audio.play().catch(()=>{ /* autoplay blocked */ });
       }
 
       async function askAssistant(text, forceAudio = false){
@@ -303,6 +342,32 @@ add_shortcode('am_chat', function(){
           setState('Idle');
         }
         busy = false;
+        if (pendingChunk && !busy) {
+          const b = pendingChunk; pendingChunk = null; await processChunk(b);
+        }
+      }
+
+      async function processChunk(blob){
+        const fd = new FormData();
+        fd.append('file', blob, `chunk.${mime === 'audio/webm' ? 'webm' : 'mp4'}`);
+        fd.append('language', lang);
+        try {
+          const r = await fetch(REST + 'am/v1/stt', {
+            method: 'POST',
+            body: fd,
+            headers: { 'X-WP-Nonce': NONCE }
+          });
+          const j = await r.json();
+          if (j && j.text) {
+            setState('Processing');
+            await askAssistant(j.text.trim(), true);
+          }
+        } catch(err){
+          logMessage('system', 'STT error');
+        }
+        if (pendingChunk && !busy) {
+          const b = pendingChunk; pendingChunk = null; await processChunk(b);
+        }
       }
 
       async function startRecognition(){
@@ -314,28 +379,13 @@ add_shortcode('am_chat', function(){
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
           if (!micAnalyser) await initMicMonitor();
           startMicViz();
-          const mime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+          mime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+          lang = document.querySelector('.openai-chat-container')?.dataset?.sttLang || 'en-US';
           mediaRecorder = new MediaRecorder(stream, { mimeType: mime });
-          const lang = document.querySelector('.openai-chat-container')?.dataset?.sttLang || 'en-US';
           mediaRecorder.ondataavailable = async (e) => {
             if (!e.data || e.data.size === 0) return;
-            const fd = new FormData();
-            fd.append('file', e.data, `chunk.${mime === 'audio/webm' ? 'webm' : 'mp4'}`);
-            fd.append('language', lang);
-            try {
-              const r = await fetch(REST + 'am/v1/stt', {
-                method: 'POST',
-                body: fd,
-                headers: { 'X-WP-Nonce': NONCE }
-              });
-              const j = await r.json();
-              if (j && j.text) {
-                setState('Processing');
-                askAssistant(j.text.trim(), true);
-              }
-            } catch(err){
-              logMessage('system', 'STT error');
-            }
+            if (busy) { pendingChunk = e.data; return; }
+            await processChunk(e.data);
           };
           mediaRecorder.start(4000);
           setState('Listening');
@@ -384,10 +434,13 @@ add_shortcode('am_chat', function(){
         setState('Idle');
         try { mediaRecorder && mediaRecorder.stop(); } catch(_) {}
         if (micVizInterval){ clearInterval(micVizInterval); micVizInterval=null; }
+        if (ttsVizInterval){ clearInterval(ttsVizInterval); ttsVizInterval=null; }
+        if (ttsCtx){ try{ ttsCtx.close(); } catch(_){} ttsCtx=null; }
         if (avatarImg) avatarImg.style.transform='scale(1)';
         if (micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; }
         if (mediaRecorder && mediaRecorder.stream){ mediaRecorder.stream.getTracks().forEach(t=> t.stop()); }
         mediaRecorder = null;
+        pendingChunk = null;
         if (micCtx){ try{ micCtx.close(); } catch(_){} micCtx=null; micAnalyser=null; }
         if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
         micMuted = false;
