@@ -79,6 +79,9 @@ function am_rest_chat(WP_REST_Request $req) {
         $agent_id = (int)$req->get_param('agent_id');
         $message  = trim((string)$req->get_param('message'));
         $conv_uid = sanitize_text_field($req->get_param('conversation_uid') ?: '');
+        $opts     = (array)$req->get_param('options');
+        $tone     = sanitize_text_field($opts['tone'] ?? '');
+        $length   = sanitize_text_field($opts['length'] ?? '');
         
         if(!$agent_id || $message==='') {
             ob_end_clean();
@@ -122,6 +125,15 @@ function am_rest_chat(WP_REST_Request $req) {
           $msgs = [ am_build_agent_system_message($agent_id, $summary) ];
           foreach($history as $h){ $msgs[] = ['role'=>$h['role'],'content'=>$h['content']]; }
           $msgs[] = ['role'=>'system','content'=>"Always respond directly to the user's most recent message. Be contextual."];
+
+          if($tone){
+            $msgs[] = ['role'=>'system','content'=>"Use a {$tone} tone in your replies."];
+          }
+          if($length === 'concise'){
+            $msgs[] = ['role'=>'system','content'=>'Keep responses concise.'];
+          } elseif($length === 'detailed'){
+            $msgs[] = ['role'=>'system','content'=>'Provide detailed and thorough responses.'];
+          }
 
           $reply = am_openai_chat_complete($model, $msgs, $temp);
           if(is_wp_error($reply)) {

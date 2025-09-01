@@ -545,32 +545,41 @@ function am_format_date_group($date) {
 // Shortcode for minimal chat customization options
 function am_chat_options_shortcode(){
   $uid = wp_generate_uuid4();
+  $agent_id = isset($_GET['agent_id']) ? (int)$_GET['agent_id'] : 0;
+  $avatar = $agent_id ? get_the_post_thumbnail_url($agent_id,'thumbnail') : '';
+  $name   = $agent_id ? get_the_title($agent_id) : '';
   ob_start(); ?>
   <div class="am-chat-options" id="am-chat-options-<?php echo esc_attr($uid); ?>">
-    <div>
-      <label for="am-chat-tone-<?php echo esc_attr($uid); ?>">Tone:</label>
-      <select id="am-chat-tone-<?php echo esc_attr($uid); ?>">
-        <option value="">Default</option>
-        <option value="friendly">Friendly</option>
-        <option value="professional">Professional</option>
-        <option value="humorous">Humorous</option>
-      </select>
-    </div>
-    <div>
-      <label for="am-chat-length-<?php echo esc_attr($uid); ?>">Length:</label>
-      <select id="am-chat-length-<?php echo esc_attr($uid); ?>">
-        <option value="">Default</option>
-        <option value="concise">Concise</option>
-        <option value="detailed">Detailed</option>
-      </select>
-    </div>
+    <?php if($avatar || $name): ?>
+      <div class="am-chat-info">
+        <?php if($avatar): ?><img src="<?php echo esc_url($avatar); ?>" alt="<?php echo esc_attr($name); ?>" class="am-chat-info-avatar" /><?php endif; ?>
+        <?php if($name): ?><span class="am-chat-info-name"><?php echo esc_html($name); ?></span><?php endif; ?>
+      </div>
+    <?php endif; ?>
+    <label for="am-chat-tone-<?php echo esc_attr($uid); ?>">Tone:</label>
+    <select id="am-chat-tone-<?php echo esc_attr($uid); ?>">
+      <option value="">Default</option>
+      <option value="friendly">Friendly</option>
+      <option value="professional">Professional</option>
+      <option value="humorous">Humorous</option>
+    </select>
+
+    <label for="am-chat-length-<?php echo esc_attr($uid); ?>">Length:</label>
+    <select id="am-chat-length-<?php echo esc_attr($uid); ?>">
+      <option value="">Default</option>
+      <option value="concise">Concise</option>
+      <option value="detailed">Detailed</option>
+    </select>
+
     <button type="button" id="am-chat-save-<?php echo esc_attr($uid); ?>">Save</button>
+    <div class="am-chat-toast" id="am-chat-toast-<?php echo esc_attr($uid); ?>" style="display:none">Saved</div>
   </div>
   <script>
   (function(){
     const toneSel = document.getElementById('am-chat-tone-<?php echo esc_attr($uid); ?>');
     const lenSel  = document.getElementById('am-chat-length-<?php echo esc_attr($uid); ?>');
     const saveBtn = document.getElementById('am-chat-save-<?php echo esc_attr($uid); ?>');
+    const toast   = document.getElementById('am-chat-toast-<?php echo esc_attr($uid); ?>');
     const params  = new URLSearchParams(location.search);
     const agent   = params.get('agent_id') || '0';
     const key     = `amChatOpts-agent-${agent}`;
@@ -584,6 +593,10 @@ function am_chat_options_shortcode(){
       };
       try { localStorage.setItem(key, JSON.stringify(opts)); } catch(_){ }
       window.AM_CHAT_OPTS[key] = opts;
+      if (toast) {
+        toast.style.display = 'block';
+        setTimeout(()=>{ toast.style.display = 'none'; }, 1000);
+      }
     }
 
     let stored = {};

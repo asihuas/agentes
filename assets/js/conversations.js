@@ -7,25 +7,33 @@
   const AM_REST = (window.AM_REST || '/wp-json/') + '';
   const AM_NONCE = (window.AM_NONCE || '') + '';
   const deletingCids = new Set();
+  function removeEmptyGroup(list) {
+    if (!list || !list.classList?.contains('am-chat-list')) return;
+    if (list.children.length === 0) {
+      const header = list.previousElementSibling;
+      if (header && header.tagName.toLowerCase() === 'h5') header.remove();
+      list.remove();
+    }
+  }
+
   function moveChatItemToDateGroup(item, newDateKey) {
-    // Find the correct group (h5 with date label)
+    const oldList = item.parentElement;
     const container = item.closest('.am-assistant-chats-container');
     if (!container) return;
     let groupHeader = Array.from(container.querySelectorAll('h5')).find(h => h.textContent === newDateKey);
     let groupList;
     if (!groupHeader) {
-      // Create new group if not exists
       groupHeader = document.createElement('h5');
       groupHeader.textContent = newDateKey;
       groupList = document.createElement('ul');
       groupList.className = 'am-chat-list';
-      // Insert at top
       container.insertBefore(groupHeader, container.querySelector('h5'));
       container.insertBefore(groupList, groupHeader.nextSibling);
     } else {
       groupList = groupHeader.nextElementSibling;
     }
     groupList.appendChild(item);
+    removeEmptyGroup(oldList);
   }
 
   function getTodayLabel() {
@@ -303,7 +311,9 @@
             if (!r.ok) throw new Error('Delete failed');
 
             // Remove from list
+            const parentList = item.parentElement;
             item.remove();
+            removeEmptyGroup(parentList);
 
             // Check if viewing deleted conversation
             const currentCid = new URL(window.location.href).searchParams.get('cid');
@@ -342,7 +352,9 @@
           if (!r.ok) throw new Error('API error');
           
           // Remove from DOM
+          const parentList2 = item.parentElement;
           item.remove();
+          removeEmptyGroup(parentList2);
 
           // Check if viewing deleted conversation
           const currentCid = new URL(window.location.href).searchParams.get('cid');
@@ -377,7 +389,7 @@
 
     // Add this function inside init scope
     function updateConversationTimestamp(item) {
-      // Move conversation to Today section
+      const oldList = item.parentElement;
       const todayHeader = Array.from(cont.querySelectorAll('h5')).find(h => h.textContent === 'Today');
       const todayList = todayHeader?.nextElementSibling;
       
@@ -398,6 +410,7 @@
       } else if (todayList) {
         todayList.insertBefore(item, todayList.firstChild);
       }
+      removeEmptyGroup(oldList);
     }
 
     // Helper to ensure Today section exists
